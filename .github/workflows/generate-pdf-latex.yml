@@ -1,0 +1,57 @@
+name: Generate PDF from LaTeX Resume
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Library/Resume/**'
+  workflow_dispatch:
+
+jobs:
+  generate-pdf-latex:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Restore latest cached PDF
+        id: cache-pdf
+        uses: actions/cache@v3
+        with:
+          path: Library/Resume/out/Latest.pdf
+          key: resume-pdf-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            resume-pdf-${{ runner.os }}-
+
+      - name: Set up LaTeX
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: 'resume.tex'
+          working_directory: 'Library/Resume'
+
+      - name: Initialize Git credentials for GitHub Actions
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Rename existing Latest.pdf to Edit $.pdf
+        run: |
+          mkdir -p Library/Resume/out
+          if [ -f Library/Resume/out/Latest.pdf ]; then
+            count=1
+            while [ -f Library/Resume/out/Edit_${count}.pdf ]; do
+              ((count++))
+            done
+            mv Library/Resume/out/Latest.pdf Library/Resume/out/Edit_${count}.pdf
+            echo "Renamed Latest.pdf to Edit_${count}.pdf"
+            git add Library/Resume/out/Edit_${count}.pdf
+          fi
+
+      - name: Move generated PDF to Latest.pdf
+        run: |
+          mv Library/Resume/resume.pdf Library/Resume/out/Latest.pdf
+          git add Library/Resume/out/Latest.pdf
+
+          git commit -m "chore(actions): update generated resume PDF"
+          git push origin main
