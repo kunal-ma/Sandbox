@@ -63,7 +63,7 @@ Write-Host "GIT_AUTHOR_DATE set to: $env:GIT_AUTHOR_DATE"
 Write-Host "GIT_COMMITTER_DATE set to: $env:GIT_COMMITTER_DATE"
 
 # Stage all changes, commit them, and push commit to Github
-git add.
+git add .
 git commit
 git push
 
