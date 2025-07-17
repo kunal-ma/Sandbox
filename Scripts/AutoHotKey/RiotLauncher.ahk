@@ -9,7 +9,7 @@
 ; --------------------------------------------------
 
 ; System metadata for executable
-;@Ahk2Exe-SetVersion 1.0.0
+;@Ahk2Exe-SetVersion 1.0.1
 ;@Ahk2Exe-SetName Riot Launcher
 ;@Ahk2Exe-SetDescription Riot Launcher
 ;@Ahk2Exe-SetOrigFilename RiotLauncher.exe
@@ -18,21 +18,26 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 
-; Check for Admin privileges
-if not A_IsAdmin {
-    if A_IsCompiled {
-        Run '*RunAs "' A_ScriptFullPath '" /restart'
-    }
-    else {
-        Run '*RunAs "' A_AhkPath '" /restart "' A_ScriptFullPath '"'
-    }
-}
+; --------------------------------------------------
 
 ; Hotkey for Panic button
 F3::Send "!{Tab}"
-
 ; Hotkey for closing Riot Client Services
 F12::ProcessClose "RiotClientServices.exe"
+
+; --------------------------------------------------
+
+; Check for Admin privileges
+if not A_IsAdmin {
+    MsgBox 'Error: Enable Run as Admin in Properties -> Compatibility'
+    ExitApp
+}
+
+; Create dummy window for Steam tracking
+myGui := Gui()
+myGui.Opt("+AlwaysOnTop -SysMenu +ToolWindow")
+myGui.Show("w1 h1 x0 y0")
+myGui.Hide()
 
 ; Disable Groupy
 Run 'net stop "Groupy"', , "Hide"
@@ -49,6 +54,9 @@ ProcessWaitClose "RiotClientServices.exe"
 
 ; Restart explorer
 ProcessClose("Explorer.exe")
+
+; Wait 5s for Explorer restart
+Sleep(5000)
 
 ; Enable Rainmeter
 Run 'C:\Program Files\Rainmeter\Rainmeter.exe'
